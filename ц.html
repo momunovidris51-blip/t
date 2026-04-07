@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Face ID Scanner</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .scan-area {
+            width: 250px;
+            height: 250px;
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 20px #00ff00;
+            margin-bottom: 20px;
+        }
+
+        /* Сканерлөөчү сызык */
+        .line {
+            width: 100%;
+            height: 2px;
+            background: #00ff00;
+            position: absolute;
+            top: 0;
+            box-shadow: 0 0 10px #00ff00;
+            animation: move 2s infinite linear;
+        }
+
+        @keyframes move {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        #status { font-size: 18px; margin-top: 10px; }
+
+        /* Скример үчүн контейнер */
+        #scary-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #scary-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(5px, 5px); }
+            20% { transform: translate(-5px, -10px); }
+            40% { transform: translate(10px, 5px); }
+            60% { transform: translate(-10px, -5px); }
+            100% { transform: translate(0, 0); }
+        }
+        .shaking { animation: shake 0.1s infinite; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div class="scan-area">
+            <div class="line"></div>
+        </div>
+        <div id="status">Бетти сканерлөө...</div>
+        <p style="color: #666; font-size: 12px; margin-top: 20px;">Экраныңызга 10 см жакын келиңиз</p>
+        <button id="startBtn" onclick="startScanning()" style="padding: 10px 20px; background: transparent; color: #00ff00; border: 1px solid #00ff00; margin-top: 20px;">БАШТОО</button>
+    </div>
+
+    <!-- Скример катмары -->
+    <div id="scary-overlay">
+        <!-- Бул жерге коркунучтуу монстрдун сүрөтү келет -->
+        <img src="https://giphy.com">
+    </div>
+
+    <!-- Кыйкырык үнү -->
+    <audio id="screamSound">
+        <source src="https://soundjay.com" type="audio/mpeg">
+    </audio>
+
+    <script>
+        function startScanning() {
+            const btn = document.getElementById("startBtn");
+            const status = document.getElementById("status");
+            const scream = document.getElementById("screamSound");
+            const overlay = document.getElementById("scary-overlay");
+
+            btn.style.display = "none";
+            status.innerText = "Аныктоо жүрүүдө: 15%";
+
+            // Процесс имитациясы
+            setTimeout(() => { status.innerText = "Аныктоо жүрүүдө: 45%"; }, 1000);
+            setTimeout(() => { status.innerText = "Аныктоо жүрүүдө: 85%"; }, 2500);
+            setTimeout(() => { status.innerText = "КАТА! КАЙРА ТЕКШЕРИҢИЗ..."; }, 3500);
+
+            // 5 секунддан кийин СКРИМЕР
+            setTimeout(() => {
+                overlay.style.display = "flex";
+                document.body.classList.add("shaking");
+                scream.play();
+
+                if (navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500]);
+
+                // 3 секунддан кийин жабуу
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                    document.body.classList.remove("shaking");
+                    alert("ТАМАША! 😜");
+                    location.reload();
+                }, 3000);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
