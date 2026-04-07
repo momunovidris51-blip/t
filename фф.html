@@ -3,196 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WhatsApp</title>
+    <title>Дүйнөдөгү эң...</title>
     <style>
-        * { box-sizing: border-box; }
         body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
             margin: 0;
-            background-color: #e5ddd5;
-            background-image: url('https://githubusercontent.com');
-            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            padding: 0;
+            overflow: hidden;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
         }
 
-        /* Жогору жагы (Header) */
-        .header {
-            background-color: #075e54;
-            color: white;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             position: fixed;
-            top: 0; width: 100%; z-index: 1000;
-            justify-content: space-between;
-        }
-
-        .left-side { display: flex; align-items: center; }
-        
-        .back-arrow { font-size: 20px; margin-right: 5px; }
-
-        .avatar {
-            width: 38px; height: 38px;
-            background: #ccc url('https://ui-avatars.com') no-repeat center;
-            background-size: cover;
-            border-radius: 50%; margin-right: 10px;
-        }
-
-        .user-info .name { font-weight: bold; font-size: 16px; }
-        .user-info .status { font-size: 12px; color: #dcf8c6; }
-
-        .right-side { display: flex; gap: 20px; align-items: center; padding-right: 5px; }
-        .icon { fill: white; cursor: pointer; }
-
-        /* Чат зонасы */
-        .chat-container {
-            flex: 1;
-            padding: 75px 15px 80px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 15px;
-            position: relative;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-        }
-
-        .received { background-color: #fff; align-self: flex-start; border-top-left-radius: 0; }
-
-        .meta { display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 4px; }
-        .time { font-size: 10px; color: #999; }
-        .ticks { width: 15px; fill: #4fc3f7; } /* Көк галочкалар */
-
-        /* Төмөнкү панель */
-        .footer {
-            position: fixed;
-            bottom: 0; width: 100%;
-            background: transparent;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .input-area {
-            background: white;
-            flex: 1;
-            padding: 10px 15px;
-            border-radius: 25px;
-            color: #999;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-
-        .mic-btn {
-            background-color: #00897b;
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-
-        /* Тамаша экраны */
-        #joke-overlay {
+            top: 0;
+            left: 0;
+            z-index: 1;
             display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            color: white;
-            z-index: 2000;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            filter: brightness(0.5) contrast(1.2);
+            transform: scaleX(-1);
         }
 
-        .joke-btn {
-            background: #25d366; color: white; border: none;
-            padding: 12px 30px; border-radius: 25px;
-            font-size: 18px; margin-top: 20px; font-weight: bold;
+        #terminal {
+            position: fixed;
+            top: 50px;
+            left: 20px;
+            z-index: 5;
+            font-size: 28px; 
+            font-weight: 900; 
+            pointer-events: none;
+            text-shadow: 3px 3px 6px #000, -3px -3px 6px #000, 3px -3px 6px #000, -3px 3px 6px #000; 
+            width: 95%;
+            line-height: 1.5;
         }
+
+        .btn-box {
+            position: relative;
+            z-index: 10;
+            padding: 30px;
+            border: 3px solid #00ff00;
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 10px;
+            width: 100%;
+        }
+
+        .line { margin-bottom: 20px; opacity: 0; animation: fadeIn 0.5s forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .critical { color: #ff0000; text-shadow: 2px 2px 4px #000; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="left-side">
-            <span class="back-arrow">←</span>
-            <div class="avatar"></div>
-            <div class="user-info">
-                <div class="name">Апам ❤️</div>
-                <div id="status" class="status">онлайн</div>
-            </div>
-        </div>
-        <div class="right-side">
-            <!-- Видео чалуу иконкасы -->
-            <svg class="icon" viewBox="0 0 24 24" width="22" height="22" onclick="showJoke()"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"></path></svg>
-            <!-- Аудио чалуу иконкасы -->
-            <svg class="icon" viewBox="0 0 24 24" width="20" height="20" onclick="showJoke()"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1.02 1.02 0 0 0-1.02.24l-2.2 2.2a15.045 15.045 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1.01A11.47 11.47 0 0 1 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"></path></svg>
-            <!-- Меню иконкасы -->
-            <svg class="icon" viewBox="0 0 24 24" width="20" height="20" onclick="showJoke()"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></svg>
-        </div>
+    <div id="startUI" class="btn-box">
+        <h2 style="font-size: 30px;">Салам! 😊</h2>
+        <p style="font-size: 20px;">Дүйнөдөгү эң жакшы жана эң сулуу адамды көргүң келеби?</p>
+        <button onclick="startPrank()">ООбА, КӨРГҮМ КЕЛЕТ!</button>
     </div>
 
-    <div class="chat-container">
-        <div class="message received">
-            Сенин телефонуңдан эмнени таап алганымды билесиңби?! 😡
-            <div class="meta">
-                <div class="time">14:06</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <div class="input-area" onclick="showJoke()">
-            <span style="font-size: 20px;">😊</span>
-            <span style="flex: 1; margin-left: 10px;">Жооп Сообщение...</span>
-            <span style="display: flex; gap: 15px; color: #777;">📎 📷</span>
-        </div>
-        <div class="mic-btn" onclick="showJoke()">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
-                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
-            </svg>
-        </div>
-    </div>
-
-    <div id="joke-overlay">
-        <h1 style="font-size: 40px; color: #25d366;">ТАМАША! 😜</h1>
-        <p style="padding: 0 20px; font-size: 18px; line-height: 1.5;">Коркпоңуз, бул жөн гана пранк баракчасы.<br>Эч ким сиздин телефонуңузду аңтарган жок!</p>
-        <button class="joke-btn" onclick="location.reload()">УФФ, КОРКТУМ!</button>
-    </div>
-
-    <audio id="waSound">
-        <source src="https://myinstants.com" type="audio/mpeg">
-    </audio>
+    <video id="video" autoplay playsinline></video>
+    <div id="terminal"></div>
 
     <script>
-        // 2 секунддан кийин статус орусча "печатает..." деп өзгөрөт
-        setTimeout(() => {
-            const status = document.getElementById('status');
-            status.innerText = 'печатает...';
-            status.style.color = '#fff';
-            
-            document.getElementById('waSound').play().catch(() => {});
-            if (navigator.vibrate) navigator.vibrate(200);
-        }, 2000);
+        const logs = [
+            "Камера иштетилди...",
+            "Объект аныкталууда...",
+            "Издөө: Дүйнөдөгү эң сулуу адам...",
+            "ТАБЫЛДЫ! Бул сизсиз! 😍",
+            "Сулуулукту талдоо: 100%",
+            "КАТА: Система мындай сулуулукка чыдабайт!",
+            "КРИТИКАЛЫК АБАЛГА ӨТҮҮ...",
+            "Өчүрүү башталды: 3...",
+            "Өчүрүү башталды: 2...",
+            "Өчүрүү башталды: 1...",
+            "КАЙРА БАШЫНАН ЖҮКТӨӨ..."
+        ];
 
-        function showJoke() {
-            document.getElementById('joke-overlay').style.display = 'flex';
-            if (navigator.vibrate) navigator.vibrate(500);
+        async function startPrank() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('startUI').style.display = 'none';
+
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i < logs.length) {
+                        const line = document.createElement('div');
+                        line.className = 'line';
+                        
+                        if (logs[i].includes("КАТА") || logs[i].includes("КРИТИКАЛЫК")) {
+                            line.classList.add('critical');
+                        }
+
+                        line.innerText = ">> " + logs[i];
+                        document.getElementById('terminal').appendChild(line);
+                        
+                        if (navigator.vibrate) navigator.vibrate(150);
+                        i++;
+                    } else {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            location.reload(); 
+                        }, 2000);
+                    }
+                }, 2000); 
+
+            } catch (err) {
+                alert("Камерага уруксат бериңиз! 😉");
+            }
         }
     </script>
 </body>
