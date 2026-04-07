@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <title>SHEPARD ILLUSION OVERDRIVE</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }
+        canvas { width: 100vw; height: 100vh; filter: contrast(200%) brightness(1.1); }
+        .start-btn {
+            position: absolute; padding: 20px 40px; font-size: 20px; font-weight: bold;
+            background: white; border: none; cursor: pointer; z-index: 10; border-radius: 50px;
+            box-shadow: 0 0 30px #fff;
+        }
+        .center-dot {
+            position: absolute; width: 6px; height: 6px; background: red;
+            border-radius: 50%; z-index: 5; box-shadow: 0 0 15px red;
+        }
+    </style>
+</head>
+<body>
+    <button class="start-btn" onclick="init()">БАШТОО (ҮН МЕНЕН)</button>
+    <div class="center-dot"></div>
+    <canvas id="c"></canvas>
+
+    <script>
+        let audioCtx;
+        function init() {
+            document.querySelector('.start-btn').style.display = 'none';
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // 1. АУДИО ИЛЛЮЗИЯ: Түбөлүктүү көтөрүлүүчү үн (Shepard Tone)
+            const numOscillators = 6;
+            for (let i = 0; i < numOscillators; i++) {
+                createShepardTone(i, numOscillators);
+            }
+            requestAnimationFrame(draw);
+        }
+
+        function createShepardTone(index, total) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            
+            // Үн бийиктиги жана катуулугу циклдик түрдө өзгөрөт
+            const baseFreq = 110 * Math.pow(2, index);
+            osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+            
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start();
+
+            function updateFreq() {
+                const time = audioCtx.currentTime;
+                const cycle = (time * 0.2 + index / total) % 1;
+                const freq = 110 * Math.pow(2, cycle * total);
+                
+                // Үн жогору жакта өчүп, төмөн жакта кайра пайда болот
+                const volume = Math.sin(cycle * Math.PI);
+                
+                osc.frequency.setTargetAtTime(freq, time, 0.1);
+                gain.gain.setTargetAtTime(volume * 0.2, time, 0.1);
+                requestAnimationFrame(updateFreq);
+            }
+            updateFreq();
+        }
+
+        // 2. ВИЗУАЛДЫК ИЛЛЮЗИЯ
+        const canvas = document.getElementById('c');
+        const gl = canvas.getContext('webgl');
+        const vs = `attribute vec2 p; void main() { gl_Position = vec4(p, 0, 1); }`;
+        const fs = `
+            precision highp float;
+            uniform float t; uniform vec2 r;
+            void main() {
+                vec2 uv = (gl_FragCoord.xy - 0.5 * r) / min(r.y, r.x);
+                float d = length(uv);
+                float a = atan(uv.y, uv.x);
+                // Үн менен синхрондуу түрдө кеңейген спираль
+                float v = sin(20.0 * log(d) - t * 5.0 + a * 3.0);
+                float color = smoothstep(-0.1, 0.1, v);
+                gl_FragColor = vec4(vec3(color * (1.0 - d)), 1.0);
+            }
+        `;
+
+        const s = (t, src) => { const sh = gl.createShader(t); gl.shaderSource(sh, src); gl.compileShader(sh); return sh; };
+        const p = gl.createProgram();
+        gl.attachShader(p, s(gl.VERTEX_SHADER, vs));
+        gl.attachShader(p, s(gl.FRAGMENT_SHADER, fs));
+        gl.linkProgram(p);
+        gl.useProgram(p);
+        const b = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, b);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+        const aP = gl.getAttribLocation(p, "p");
+        gl.enableVertexAttribArray(aP);
+        gl.vertexAttribPointer(aP, 2, gl.FLOAT, false, 0, 0);
+        const uT = gl.getUniformLocation(p, "t");
+        const uR = gl.getUniformLocation(p, "r");
+
+        function draw(time) {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.uniform1f(uT, time * 0.001);
+            gl.uniform2f(uR, canvas.width, canvas.height);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            requestAnimationFrame(draw);
+        }
+    </script>
+</body>
+</html>
