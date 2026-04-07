@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Neo Settings</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2ff; --neon-red: #e94560; --dark: #0a0a0c; }
+        
+        body { 
+            font-family: 'Orbitron', sans-serif; margin: 0; min-height: 100vh; 
+            display: flex; justify-content: center; align-items: center; 
+            background: var(--dark); padding: 20px; box-sizing: border-box; overflow-x: hidden;
+        }
+
+        /* Көрүнүктүү жана жылып туруучу неон сеткасы */
+        .grid-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0, 242, 255, 0.2) 2px, transparent 2px),
+                              linear-gradient(90deg, rgba(0, 242, 255, 0.2) 2px, transparent 2px);
+            background-size: 50px 50px; transform: perspective(600px) rotateX(60deg);
+            transform-origin: center top; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.6));
+            animation: moveGrid 8s linear infinite; z-index: -1;
+        }
+        @keyframes moveGrid { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
+
+        .card { 
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); 
+            padding: 25px; border-radius: 25px; border: 2px solid var(--neon); 
+            width: 100%; max-width: 480px; box-sizing: border-box; text-align: center; 
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+        }
+
+        h2 { color: var(--neon); letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); margin-bottom: 20px; }
+        
+        .input-group { margin-bottom: 12px; text-align: left; }
+        label { font-size: 10px; color: var(--neon); font-weight: bold; text-transform: uppercase; margin-left: 5px; }
+
+        input, select { 
+            width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; 
+            border: 1px solid var(--neon); background: rgba(0,0,0,0.6); 
+            color: white; outline: none; font-family: sans-serif; box-sizing: border-box;
+        }
+
+        /* Варианттардын арасын ачуу */
+        .grid-opts { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+            margin-top: 15px; margin-bottom: 15px; 
+        }
+        @media (max-width: 450px) { .grid-opts { grid-template-columns: 1fr; } }
+
+        .neo-btn { 
+            width: 100%; padding: 15px; background: transparent; border: 2px solid var(--neon); 
+            color: var(--neon); font-weight: bold; cursor: pointer; transition: 0.3s; 
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); margin-top: 10px; 
+            display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Orbitron';
+        }
+        .neo-btn:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
+        
+        .danger-btn { border-color: var(--neon-red); color: var(--neon-red); }
+        .danger-btn:hover { background: var(--neon-red); color: white; }
+
+        #imgPreview { width: 100%; border-radius: 15px; margin-top: 10px; display: none; border: 1px solid var(--neon); max-height: 150px; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <div class="card animate__animated animate__fadeInUp">
+        <a href="index.html" style="color:var(--neon); text-decoration:none; font-size:12px;"><i class="fas fa-home"></i> МЕНЮГА КАЙТУУ</a>
+        <h2><i class="fas fa-terminal"></i> ADMIN PANEL</h2>
+
+        <!-- 1. Убакыт жөндөө -->
+        <div class="input-group">
+            <label>СУРООГО БЕРИЛГЕН УБАКЫТ (СЕК)</label>
+            <input type="number" id="tSet" placeholder="Мисалы: 15">
+            <button class="neo-btn" style="padding: 10px; font-size: 11px;" onclick="saveTime()">УБАКЫТТЫ САКТОО</button>
+        </div>
+
+        <hr style="border: 1px solid var(--neon); opacity: 0.2; margin: 20px 0;">
+
+        <!-- 2. Жаңы суроо кошуу -->
+        <div class="input-group">
+            <label>СҮРӨТ ЖҮКТӨӨ (IMAGE)</label>
+            <input type="file" id="fInput" accept="image/*" onchange="previewImg()">
+            <img id="imgPreview">
+        </div>
+
+        <div class="input-group">
+            <label>СУРООНУН ТЕКСТИ</label>
+            <input type="text" id="qText" placeholder="Суроону жазыңыз...">
+        </div>
+
+        <div class="input-group">
+            <label>ВАРИАНТ САНЫ</label>
+            <select id="optionCount" onchange="toggleOptions()">
+                <option value="2">2 Вариант</option>
+                <option value="3">3 Вариант</option>
+                <option value="4" selected>4 Вариант</option>
+            </select>
+        </div>
+
+        <!-- Варианттар талаасы (Gap менен) -->
+        <div class="grid-opts">
+            <div class="input-group"><label>А Варианты</label><input type="text" id="optA" placeholder="Жооп А"></div>
+            <div class="input-group"><label>Б Варианты</label><input type="text" id="optB" placeholder="Жооп Б"></div>
+            <div class="input-group" id="groupC"><label>В Варианты</label><input type="text" id="optC" placeholder="Жооп В"></div>
+            <div class="input-group" id="groupD"><label>Г Варианты</label><input type="text" id="optD" placeholder="Жооп Г"></div>
+        </div>
+
+        <div class="input-group">
+            <label>ТУУРА ЖООПТУ ТАНДАҢЫЗ</label>
+            <select id="correctOpt">
+                <option value="a">А</option>
+                <option value="b">Б</option>
+                <option value="c" id="vC">В</option>
+                <option value="d" id="vD">Г</option>
+            </select>
+        </div>
+
+        <button class="neo-btn" onclick="addQuestion()"><i class="fas fa-plus-circle"></i> СУРООНУ КОШУУ</button>
+
+        <!-- 3. Тазалоо функциялары -->
+        <div style="margin-top: 25px; display: grid; gap: 10px;">
+            <button class="neo-btn danger-btn" onclick="clearData('myQuiz')"><i class="fas fa-trash"></i> СУРООЛОРДУ ТАЗАЛОО</button>
+            <button class="neo-btn danger-btn" style="border-color: gold; color: gold;" onclick="clearData('leaderboard')"><i class="fas fa-chart-bar"></i> РЕКОРДДОРДУ ӨЧҮРҮҮ</button>
+        </div>
+    </div>
+
+    <script>
+        let imgBase64 = "";
+
+        function previewImg() {
+            const file = document.getElementById('fInput').files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                imgBase64 = reader.result;
+                document.getElementById('imgPreview').src = imgBase64;
+                document.getElementById('imgPreview').style.display = "block";
+            };
+            if(file) reader.readAsDataURL(file);
+        }
+
+        function saveTime() {
+            const time = document.getElementById('tSet').value;
+            if(!time) return alert("Убакытты жазыңыз!");
+            localStorage.setItem("quizTimeLimit", time);
+            alert("Убакыт сакталды!");
+        }
+
+        function toggleOptions() {
+            const count = document.getElementById('optionCount').value;
+            document.getElementById('groupC').style.display = count >= 3 ? "block" : "none";
+            document.getElementById('vC').style.display = count >= 3 ? "block" : "none";
+            document.getElementById('groupD').style.display = count == 4 ? "block" : "none";
+            document.getElementById('vD').style.display = count == 4 ? "block" : "none";
+        }
+
+        function addQuestion() {
+            const q = document.getElementById('qText').value;
+            const count = document.getElementById('optionCount').value;
+            const opts = {
+                a: document.getElementById('optA').value,
+                b: document.getElementById('optB').value,
+                c: document.getElementById('optC').value,
+                d: document.getElementById('optD').value
+            };
+            const correct = document.getElementById('correctOpt').value;
+
+            if(!q || !opts.a || !opts.b) return alert("Негизги талааларды толтуруңуз!");
+
+            let questions = JSON.parse(localStorage.getItem("myQuiz")) || [];
+            let newQ = { q, options: { a: opts.a, b: opts.b }, correct, image: imgBase64, count };
+
+            if(count >= 3) newQ.options.c = opts.c;
+            if(count == 4) newQ.options.d = opts.d;
+
+            questions.push(newQ);
+            localStorage.setItem("myQuiz", JSON.stringify(questions));
+            alert("Суроо кошулду!");
+            location.reload();
+        }
+
+        function clearData(key) {
+            if(confirm("Чын эле өчүрөсүзбү?")) {
+                localStorage.removeItem(key);
+                if(key === 'leaderboard') localStorage.removeItem("totalGoldEarned");
+                alert("Тазаланды!");
+                location.reload();
+            }
+        }
+
+        // Баштапкы абалды жөндөө
+        toggleOptions();
+    </script>
+</body>
+</html>
