@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Quiz | Neo Menu</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <link rel="stylesheet" href="https://cloudflare.com"/>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2ff; --neon-red: #e94560; --dark: #0a0a0c; --gold: #ffd700; }
+        body { font-family: 'Orbitron', sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--dark); overflow-x: hidden; color: white; padding: 20px; box-sizing: border-box; }
+        .grid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(0, 242, 255, 0.15) 2px, transparent 2px), linear-gradient(90deg, rgba(0, 242, 255, 0.15) 2px, transparent 2px); background-size: 40px 40px; transform: perspective(600px) rotateX(60deg); transform-origin: center top; filter: drop-shadow(0 0 5px rgba(0, 242, 255, 0.5)); animation: moveGrid 8s linear infinite; z-index: -1; }
+        @keyframes moveGrid { 0% { background-position: 0 0; } 100% { background-position: 0 80px; } }
+        .container { display: flex; flex-direction: column; gap: 30px; align-items: center; width: 100%; max-width: 900px; z-index: 10; }
+        @media (min-width: 768px) { .container { flex-direction: row; align-items: flex-end; justify-content: center; } }
+        .menu-card { text-align: center; padding: 30px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border-radius: 30px; border: 2px solid var(--neon); width: 100%; max-width: 320px; box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--neon); background: rgba(0,0,0,0.6); color: white; margin-bottom: 20px; font-family: 'Orbitron'; outline: none; text-align: center; }
+        .neo-btn { width: 100%; padding: 18px; background: transparent; border: 2px solid var(--neon); color: var(--neon); font-weight: bold; cursor: pointer; transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; margin-bottom: 10px; box-sizing: border-box; }
+        .neo-btn:hover { background: var(--neon); color: black; box-shadow: 0 0 30px var(--neon); }
+        .chart-container { background: rgba(255, 255, 255, 0.05); border-radius: 30px; padding: 25px; height: 380px; display: flex; align-items: flex-end; gap: 15px; width: 100%; max-width: 400px; justify-content: center; position: relative; border: 1px solid rgba(255, 215, 0, 0.3); box-sizing: border-box; }
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 40px; }
+        .bar { width: 100%; max-width: 40px; background: linear-gradient(to top, var(--neon-red), var(--gold)); border-radius: 8px 8px 0 0; transition: height 1s ease-out; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+        .bar-name { font-size: 10px; margin-top: 8px; transform: rotate(-30deg); white-space: nowrap; color: #ccc; }
+        #passModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="container animate__animated animate__fadeIn">
+        <div class="menu-card">
+            <h1 style="text-shadow: 0 0 20px var(--neon); letter-spacing: 5px;">QUIZ</h1>
+            <input type="text" id="playerName" placeholder="АТЫҢЫЗ">
+            <button class="neo-btn" onclick="playGame()"><i class="fas fa-play"></i> БАШТОО</button>
+            <button class="neo-btn" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="openPass()"><i class="fas fa-lock"></i> АДМИН</button>
+        </div>
+        <div class="chart-container" id="chart">
+            <div style="position:absolute; top:15px; color:var(--gold); font-size:12px; letter-spacing:3px;">РЕКОРДДОР ТАКТАСЫ</div>
+        </div>
+    </div>
+    <div id="passModal">
+        <div class="menu-card" style="border-color:var(--neon-red)">
+            <h3 style="color:var(--neon-red)">ПАРОЛЬ КЕРЕК</h3>
+            <input type="password" id="adminPass" style="border-color:var(--neon-red)">
+            <button class="neo-btn" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="checkPass()">КИРҮҮ</button>
+            <button class="neo-btn" style="border:none" onclick="closePass()">ЖАБУУ</button>
+        </div>
+    </div>
+    <script>
+        const ADMIN_PASS = "1234";
+        function playGame() {
+            const n = document.getElementById('playerName').value.trim();
+            if(!n) return alert("Атыңызды жазыңыз!");
+            localStorage.setItem("currentPlayer", n);
+            window.location.href = "game.html";
+        }
+        function openPass() { document.getElementById('passModal').style.display='flex'; }
+        function closePass() { document.getElementById('passModal').style.display='none'; }
+        function checkPass() { if(document.getElementById('adminPass').value === ADMIN_PASS) window.location.href="admin.html"; else alert("Ката пароль!"); }
+        window.onload = () => {
+            const chart = document.getElementById('chart');
+            const data = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            const max = data.length ? Math.max(...data.map(p => p.score)) : 100;
+            data.sort((a,b) => b.score - a.score).slice(0, 5).reverse().forEach(p => {
+                const h = (p.score / max) * 230 + 20;
+                chart.innerHTML += `<div class="bar-wrapper animate__animated animate__bounceInUp"><span style="color:gold; font-size:11px; font-weight:bold; margin-bottom:5px;">${p.score}</span><div class="bar" style="height:${h}px"></div><span class="bar-name">${p.name}</span></div>`;
+            });
+        };
+    </script>
+</body>
+</html>
