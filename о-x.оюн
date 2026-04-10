@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Мобилдик версия</title>
+    <style>
+        /* Телефонго жана компьютерге бирдей ыңгайлуу негизги стилдер */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f7f9fc;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        /* Оюндун абалынын жазуусу */
+        #status {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Оюн тактасы (Телефон экранына жараша ийкемдүү) */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            background-color: #34495e;
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            width: 90vw; /* Экрандын туурасынын 90% ээлейт */
+            max-width: 360px; /* Компьютерде ашыкча чоңоюп кетпейт */
+            aspect-ratio: 1 / 1; /* Ар дайым квадрат бойдон калат */
+        }
+
+        /* Клеткалардын стили */
+        .cell {
+            background-color: #ffffff;
+            border: none;
+            font-size: clamp(28px, 8vw, 42px); /* Тексттин өлчөмү экранга жараша өзгөрөт */
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+
+        .cell:active {
+            background-color: #ecf0f1;
+            transform: scale(0.95);
+        }
+
+        /* "X" жана "O" тамгалары үчүн ар башка түстөр */
+        .cell.x-player {
+            color: #e74c3c; /* Кызыл */
+        }
+
+        .cell.o-player {
+            color: #3498db; /* Көк */
+        }
+
+        /* Жеңүүчү клеткаларды сызып/белгилеп коюу */
+        .cell.winner {
+            background-color: #2ecc71 !important; /* Жашыл */
+            color: #ffffff !important;
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Бош эмес клеткалар */
+        .cell.taken {
+            cursor: not-allowed;
+        }
+
+        /* Кайра баштоо баскычы */
+        #reset-btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #2c3e50;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+
+        #reset-btn:hover {
+            background-color: #1a252f;
+        }
+
+        #reset-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="status">Оюнчу X'дин кезеги</div>
+
+    <div class="board" id="board">
+        <!-- Клеткалар JS аркылуу түзүлөт -->
+    </div>
+
+    <button id="reset-btn" onclick="resetGame()">Оюнду кайра баштоо</button>
+
+    <script>
+        let currentPlayer = "X";
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let gameActive = true;
+        let winningCombination = []; // Жеңүүчү сызыкты сактоо үчүн
+
+        const statusLabel = document.getElementById('status');
+        const boardElement = document.getElementById('board');
+
+        // Жеңүүчү айкалыштар
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Саптар
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Тиктер
+            [0, 4, 8], [2, 4, 6]              // Диагоналдар
+        ];
+
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('button');
+                cell.classList.add('cell');
+                cell.setAttribute('data-index', i);
+                // Эч кандай кабыл алгыс сезим болбош үчүн мобилдик таптоону колдойбуз
+                cell.addEventListener('click', () => makeMove(i));
+                boardElement.appendChild(cell);
+            }
+        }
+
+        function makeMove(index) {
+            if (board[index] === "" && gameActive) {
+                board[index] = currentPlayer;
+                
+                const cell = document.querySelector(`[data-index='${index}']`);
+                cell.innerText = currentPlayer;
+                cell.classList.add('taken');
+                cell.classList.add(currentPlayer === "X" ? "x-player" : "o-player");
+
+                if (checkWinner()) {
+                    statusLabel.innerText = `Оюнчу ${currentPlayer} жеңди! 🎉`;
+                    gameActive = false;
+                    
+                    // Жеңүүчү клеткаларды сызып/жашыл кылып белгилөө
+                    winningCombination.forEach(idx => {
+                        document.querySelector(`[data-index='${idx}']`).classList.add('winner');
+                    });
+
+                    // Кичинекей кечигүү менен билдирүү чыгаруу
+                    setTimeout(() => alert(`Оюн бүттү! Оюнчу ${currentPlayer} жеңди!`), 300);
+                    return;
+                }
+
+                if (!board.includes("")) {
+                    statusLabel.innerText = "Тең чыгуу! 🤝";
+                    gameActive = false;
+                    setTimeout(() => alert("Оюн бүттү! Тең чыгуу!"), 300);
+                    return;
+                }
+
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+                statusLabel.innerText = `Оюнчу ${currentPlayer}'дин кезеги`;
+            }
+        }
+
+        function checkWinner() {
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (board[a] !== "" && board[a] === board[b] && board[a] === board[c]) {
+                    winningCombination = [a, b, c]; // Кайсы клеткалар жеңгенин сактайбыз
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function resetGame() {
+            currentPlayer = "X";
+            board = ["", "", "", "", "", "", "", "", ""];
+            gameActive = true;
+            winningCombination = [];
+            statusLabel.innerText = `Оюнчу X'дин кезеги`;
+            
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.innerText = "";
+                cell.className = 'cell'; // Бардык класстарды баштапкы абалга келтирет
+            });
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
